@@ -1,0 +1,14 @@
+---
+dependencies: []
+galaxy_info:
+  author: zstyblik
+  description: Ansible role for deployment of rss2irc
+  company: Zdenek Styblik
+  license: MIT
+  min_ansible_version: '2.9'
+  platforms:
+    - name: Debian
+      versions:
+        - bookworm
+  galaxy_tags:
+    - rss2irc

@@ -1,0 +1,26 @@
+#!/bin/sh
+# NOTICE: Deployed by Ansible. DO NOT EDIT!
+set -u
+
+CACHE_DIR='{{ rss2irc_cache_dir }}'
+LOCK_DIR='{{ rss2irc_irc_lock_dir }}'
+RSS2IRC='{{ rss2irc_python_venv_dir }}/bin/python {{ rss2irc_src_dir }}/rss2irc.py'
+
+on_exit() {
+    rmdir "${LOCK_DIR}"
+}
+
+mkdir "${LOCK_DIR}" 2>/dev/null || exit 0
+trap on_exit EXIT
+
+cd "{{ rss2irc_src_dir }}"
+{% for rss_feed in rss2irc_irc_feeds.values() %}
+${RSS2IRC} \
+    --output '{{ rss_feed.output }}' \
+    --cache "${CACHE_DIR}/{{ rss_feed.cache_fname }}" \
+    --handle '{{ rss_feed.handle }}' \
+{% if 'cache_expiration' in rss_feed %}
+    --cache-expiration '{{ rss_feed.cache_expiration }}' \
+{% endif %}
+    --rss-url '{{ rss_feed.rss_url }}'
+{% endfor %}

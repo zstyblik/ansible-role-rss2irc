@@ -1,0 +1,104 @@
+---
+- name: Initialize variables
+  ansible.builtin.set_fact:
+    rss2irc_cache_dir: "{{ rss2irc_base_dir }}/cache"
+    rss2irc_python_venv_dir: "{{ rss2irc_base_dir }}/venv"
+    rss2irc_scripts_dir: "{{ rss2irc_base_dir }}/scripts"
+    rss2irc_src_dir: "{{ rss2irc_base_dir }}/src"
+
+- name: Install packages
+  ansible.builtin.package:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ rss2irc_required_packages }}"
+  become: true
+
+- name: Create directory structure
+  ansible.builtin.file:
+    name: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0750'
+  with_items:
+    - "{{ rss2irc_base_dir }}"
+    - "{{ rss2irc_cache_dir }}"
+    - "{{ rss2irc_scripts_dir }}"
+  become: true
+
+- name: Get rss2irc from git repo
+  ansible.builtin.git:
+    repo: "https://github.com/zstyblik/rss2irc.git"
+    dest: "{{ rss2irc_src_dir }}"
+    version: "{{ rss2irc_version }}"
+  register: _rss2irc_git_clone
+  become: true
+
+- name: Prepare virtualenv for Py dependencies
+  ansible.builtin.pip:
+    name: pip
+    virtualenv: "{{ rss2irc_python_venv_dir }}"
+    virtualenv_command: "{{ rss2irc_python_path }} -m venv"
+  become: true
+
+- name: Install Python dependencies
+  ansible.builtin.pip:
+    requirements: "{{ rss2irc_src_dir }}/requirements.txt"
+    virtualenv: "{{ rss2irc_python_venv_dir }}"
+    virtualenv_command: "{{ rss2irc_python_path }} -m venv"
+  register: _rss2irc_python_deps
+  become: true
+
+# NOTE: Having __pycache__ around led to unexpected errors eg. after
+# refactoring.
+- name: Delete __pycache__
+  ansible.builtin.file:
+    path: "{{ rss2irc_src_dir }}/{{ rss2irc_pycache_dir }}"
+    state: absent
+  loop:
+    - __pycache__
+    - lib/__pycache__
+  loop_control:
+    loop_var: rss2irc_pycache_dir
+  when: (_rss2irc_git_clone.changed) or (_rss2irc_python_deps.changed)
+  become: true
+
+- name: Deploy rss2irc.sh
+  ansible.builtin.template:
+    src: rss2irc.sh.j2
+    dest: "{{ rss2irc_scripts_dir }}/rss2irc.sh"
+    owner: root
+    group: root
+    mode: '0750'
+  when: rss2irc_irc_feeds | length > 0
+  become: true
+
+- name: Deploy rss2slack.sh
+  ansible.builtin.template:
+    src: rss2slack.sh.j2
+    dest: "{{ rss2irc_scripts_dir }}/rss2slack.sh"
+    owner: root
+    group: root
+    mode: '0750'
+  when: rss2irc_slack_feeds | length > 0
+  become: true
+
+- name: Deploy phpbb2slack.sh
+  ansible.builtin.template:
+    src: phpbb2slack.sh.j2
+    dest: "{{ rss2irc_scripts_dir }}/phpbb2slack.sh"
+    owner: root
+    group: root
+    mode: '0750'
+  when: rss2irc_phpbb2slack_feeds | length > 0
+  become: true
+
+- name: Deploy phpbb2slack.sh
+  ansible.builtin.template:
+    src: gh2slack.sh.j2
+    dest: "{{ rss2irc_scripts_dir }}/gh2slack.sh"
+    owner: root
+    group: root
+    mode: '0750'
+  when: rss2irc_gh2slack_feeds | length > 0
+  become: true
