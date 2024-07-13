@@ -1,0 +1,47 @@
+#!/bin/sh
+# NOTICE: Deployed by Ansible. DO NOT EDIT!
+set -u
+
+CACHE_DIR='{{ rss2irc_cache_dir }}'
+LOCK_DIR='{{ rss2irc_gh2slack_lock_dir }}'
+GIT_COMMITS2SLACK='{{ rss2irc_python_venv_dir }}/bin/python {{ rss2irc_src_dir }}/git_commits2slack.py'
+GH2SLACK='{{ rss2irc_python_venv_dir }}/bin/python {{ rss2irc_src_dir }}/gh2slack.py'
+
+on_exit() {
+    rmdir "${LOCK_DIR}"
+}
+
+mkdir "${LOCK_DIR}" 2>/dev/null || exit 0
+trap on_exit EXIT
+
+export SLACK_TOKEN='{{ rss2irc_slack_token }}'
+cd "{{ rss2irc_src_dir }}"
+{% for gh_feed in rss2irc_gh2slack_feeds.values() %}
+${GIT_COMMITS2SLACK} \
+    --git-clone-dir '{{ gh_feed.git_clone_dir }}' \
+    --git-repository '{{ gh_feed.git_repository }}' \
+    --git-web '{{ gh_feed.git_web }}' \
+    --slack-channel '{{ gh_feed.slack_channel }}' || true
+
+# GitHub issues
+${GH2SLACK} \
+    --cache "${CACHE_DIR}/{{ gh_feed.cache_fname }}" \
+{% if 'cache_expiration' in gh_feed %}
+    --cache-expiration '{{ gh_feed.cache_expiration }}' \
+{% endif %}
+    --gh-owner '{{ gh_feed.gh_owner }}' \
+    --gh-repo '{{ gh_feed.gh_repo }}' \
+    --gh-section issues \
+    --slack-channel '{{ gh_feed.slack_channel }}' || true
+
+# GitHub pull requests
+${GH2SLACK} \
+    --cache "${CACHE_DIR}/{{ gh_feed.cache_fname }}" \
+{% if 'cache_expiration' in gh_feed %}
+    --cache-expiration '{{ gh_feed.cache_expiration }}' \
+{% endif %}
+    --gh-owner '{{ gh_feed.gh_owner }}' \
+    --gh-repo '{{ gh_feed.gh_repo }}' \
+    --gh-section pulls \
+    --slack-channel '{{ gh_feed.slack_channel }}' || true
+{% endfor %}

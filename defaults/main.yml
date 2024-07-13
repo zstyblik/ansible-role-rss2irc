@@ -1,0 +1,59 @@
+---
+rss2irc_version: master
+rss2irc_required_packages:
+  - git
+  - python3.11-minimal
+  - python3.11-venv
+rss2irc_python_path: /usr/bin/python3.11
+rss2irc_base_dir: /opt/rss2irc
+
+rss2irc_gh2slack_lock_dir: /tmp/gh2slack.lock
+rss2irc_irc_lock_dir: /tmp/rss2irc.lock
+rss2irc_phpbb2slack_lock_dir: /tmp/phpbb2slack.lock
+rss2irc_rss2slack_lock_dir: /tmp/rss2slack.lock
+
+rss2irc_slack_token: secret
+
+rss2irc_irc_feeds: {}
+# Example:
+# rss2irc_irc_feeds:
+#   example_feed:
+#     output: '/some/path/#channel/in'
+#     cache_fname: 'example_feed.cache'
+#     cache_expiration: 15552000
+#     handle: 'EF'
+#     rss_url: 'https://www.example.com/rss'
+
+rss2irc_phpbb2slack_feeds: {}
+# Example:
+# rss2irc_phpbb2slack_feeds:
+#   example_feed:
+#     authors_of_interest: '/some/path/authors.txt'
+#     cache_fname: 'example.cache'
+#     cache_expiration: 15552000
+#     handle: 'Example'
+#     rss_url: 'https://www.example.com/rss'
+#     slack_channel: 'rss-channel'
+
+rss2irc_slack_feeds: {}
+# Example:
+# rss2irc_slack_feeds:
+#   example_feed:
+#     cache_fname: 'example.cache'
+#     cache_expiration: 15552000
+#     handle: 'Example'
+#     rss_url: 'https://www.example.com/rss'
+#     slack_channel: 'rss-channel'
+
+rss2irc_gh2slack_feeds: {}
+# Example:
+# rss2irc_gh2slack_feeds
+#   example_feed:
+#     cache_fname: 'example.cache'
+#     cache_expiration: 432000
+#     gh_owner: 'github_user'
+#     gh_repo: 'github_repository'
+#     git_clone_dir: '/where/to/clone/example'
+#     git_repository: 'https://github.com/github_user/github_repository.git'
+#     git_web: 'https://github.com/github_user/github_repository'
+#     slack_channel: 'name-of-slack-channel'
