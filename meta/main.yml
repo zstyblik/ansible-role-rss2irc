@@ -2,6 +2,8 @@
 dependencies: []
 galaxy_info:
   author: zstyblik
+  role_name: rss2irc
+  namespace: zstyblik
   description: Ansible role for deployment of rss2irc
   company: Zdenek Styblik
   license: MIT
