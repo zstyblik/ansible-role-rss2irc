@@ -4,7 +4,6 @@
     rss2irc_cache_dir: "{{ rss2irc_base_dir }}/cache"
     rss2irc_python_venv_dir: "{{ rss2irc_base_dir }}/venv"
     rss2irc_scripts_dir: "{{ rss2irc_base_dir }}/scripts"
-    rss2irc_src_dir: "{{ rss2irc_base_dir }}/src"
 
 - name: Install packages
   ansible.builtin.package:
@@ -26,41 +25,19 @@
     - "{{ rss2irc_scripts_dir }}"
   become: true
 
-- name: Get rss2irc from git repo
-  ansible.builtin.git:
-    repo: "https://github.com/zstyblik/rss2irc.git"
-    dest: "{{ rss2irc_src_dir }}"
-    version: "{{ rss2irc_version }}"
-  register: _rss2irc_git_clone
-  become: true
-
-- name: Prepare virtualenv for Py dependencies
+- name: Prepare virtualenv
   ansible.builtin.pip:
     name: pip
     virtualenv: "{{ rss2irc_python_venv_dir }}"
     virtualenv_command: "{{ rss2irc_python_path }} -m venv"
   become: true
 
-- name: Install Python dependencies
+- name: Install rss2irc into virtualenv
   ansible.builtin.pip:
-    requirements: "{{ rss2irc_src_dir }}/requirements.txt"
+    name: "{{ rss2irc_repository }}"
     virtualenv: "{{ rss2irc_python_venv_dir }}"
     virtualenv_command: "{{ rss2irc_python_path }} -m venv"
   register: _rss2irc_python_deps
-  become: true
-
-# NOTE: Having __pycache__ around led to unexpected errors eg. after
-# refactoring.
-- name: Delete __pycache__
-  ansible.builtin.file:
-    path: "{{ rss2irc_src_dir }}/{{ rss2irc_pycache_dir }}"
-    state: absent
-  loop:
-    - __pycache__
-    - lib/__pycache__
-  loop_control:
-    loop_var: rss2irc_pycache_dir
-  when: (_rss2irc_git_clone.changed) or (_rss2irc_python_deps.changed)
   become: true
 
 - name: Deploy rss2irc.sh
