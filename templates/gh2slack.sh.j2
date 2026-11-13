@@ -4,8 +4,8 @@ set -u
 
 CACHE_DIR='{{ rss2irc_cache_dir }}'
 LOCK_DIR='{{ rss2irc_gh2slack_lock_dir }}'
-GIT_COMMITS2SLACK='{{ rss2irc_python_venv_dir }}/bin/python {{ rss2irc_src_dir }}/git_commits2slack.py'
-GH2SLACK='{{ rss2irc_python_venv_dir }}/bin/python {{ rss2irc_src_dir }}/gh2slack.py'
+GIT_COMMITS2SLACK='{{ rss2irc_python_venv_dir }}/bin/git_commits2slack'
+GH2SLACK='{{ rss2irc_python_venv_dir }}/bin/gh2slack'
 
 on_exit() {
     rmdir "${LOCK_DIR}"
@@ -15,7 +15,7 @@ mkdir "${LOCK_DIR}" 2>/dev/null || exit 0
 trap on_exit EXIT
 
 export SLACK_TOKEN='{{ rss2irc_slack_token }}'
-cd "{{ rss2irc_src_dir }}"
+cd "{{ rss2irc_base_dir }}"
 {% for gh_feed in rss2irc_gh2slack_feeds.values() %}
 ${GIT_COMMITS2SLACK} \
     --git-clone-dir '{{ gh_feed.git_clone_dir }}' \
