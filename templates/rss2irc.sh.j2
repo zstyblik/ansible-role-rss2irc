@@ -4,7 +4,7 @@ set -u
 
 CACHE_DIR='{{ rss2irc_cache_dir }}'
 LOCK_DIR='{{ rss2irc_irc_lock_dir }}'
-RSS2IRC='{{ rss2irc_python_venv_dir }}/bin/python {{ rss2irc_src_dir }}/rss2irc.py'
+RSS2IRC='{{ rss2irc_python_venv_dir }}/bin/rss2irc'
 
 on_exit() {
     rmdir "${LOCK_DIR}"
@@ -13,7 +13,7 @@ on_exit() {
 mkdir "${LOCK_DIR}" 2>/dev/null || exit 0
 trap on_exit EXIT
 
-cd "{{ rss2irc_src_dir }}"
+cd "{{ rss2irc_base_dir }}"
 {% for rss_feed in rss2irc_irc_feeds.values() %}
 ${RSS2IRC} \
     --output '{{ rss_feed.output }}' \

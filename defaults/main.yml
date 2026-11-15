@@ -1,5 +1,5 @@
 ---
-rss2irc_version: master
+rss2irc_repository: "git+https://github.com/zstyblik/rss2irc"
 rss2irc_required_packages:
   - git
   - python3.11-minimal
